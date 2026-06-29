@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: journalApp
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      database: journaldb
+      auto-index-creation: true
+
+  main:
+    allow-circular-references: true
+server:
+  port: 8080
+  servlet:
+      context-path: /journal
