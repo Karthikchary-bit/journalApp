@@ -8,8 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import com.chary.journalApp.entity.User;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class UserDetailServiceImpl implements UserDetailsService {
     @Autowired
     private UserRepo userRepo;

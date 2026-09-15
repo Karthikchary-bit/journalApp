@@ -2,7 +2,9 @@ package com.chary.journalApp.controller;
 
 import com.chary.journalApp.entity.JournalEntry;
 import com.chary.journalApp.entity.User;
+import com.chary.journalApp.enums.Sentiment;
 import com.chary.journalApp.service.JournalEntryService;
+import com.chary.journalApp.service.SentimentAnalysisService;
 import com.chary.journalApp.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class JournalEntryController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SentimentAnalysisService sentimentAnalysisService;
 
     /**
      * Retrieves all journal entries stored in the database.
@@ -74,6 +79,8 @@ public class JournalEntryController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userName = authentication.getName();
             entry.setDate(LocalDateTime.now());
+
+            sentimentAnalysisService.analyzeAndSetSentiment(entry);
             journalEntryService.saveEntry(entry,userName);
             return new ResponseEntity<>(entry, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -112,7 +119,7 @@ public class JournalEntryController {
                 JournalEntry old = journalEntry.get();
                 old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().equals("") ? newEntry.getTitle() : old.getTitle());
                 old.setContent(newEntry.getContent() != null && !newEntry.getContent().equals("") ? newEntry.getContent() : old.getContent());
-
+                sentimentAnalysisService.analyzeAndSetSentiment(old);
                 // 3. Move saveEntry inside the if-block so it doesn't crash if 'old' is null
                 journalEntryService.saveEntry(old);
                 return new ResponseEntity<>(old, HttpStatus.OK);

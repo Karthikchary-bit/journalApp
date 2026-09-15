@@ -1,5 +1,6 @@
 package com.chary.journalApp.entity;
 
+import com.chary.journalApp.enums.Sentiment;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
@@ -22,6 +23,10 @@ public class JournalEntry {
     private String content;
 
     private LocalDateTime date;
+
+    private Sentiment sentiment;
+
+    private boolean sentimentAnalyzed;
 
 
 }
