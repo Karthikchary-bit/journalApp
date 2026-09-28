@@ -12,6 +12,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +40,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B clean package -DskipTests org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=karthikchary-bit -Dsonar.projectKey=karthikchary-bit_journalApp
+      - name: Build
+        run: mvn -B clean package -DskipTests
+
+      - name: Analyze with SonarCloud
+        if: ${{ env.SONAR_TOKEN != '' }}
+        run: mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=karthikchary-bit -Dsonar.projectKey=karthikchary-bit_journalApp
