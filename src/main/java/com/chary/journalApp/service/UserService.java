@@ -4,16 +4,9 @@ import com.chary.journalApp.entity.User;
 import com.chary.journalApp.repository.UserRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,9 +14,13 @@ import java.util.Optional;
 @Slf4j
 public class UserService {
 
-    @Autowired
-    private UserRepo userRepo;
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final UserRepo userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepo userRepository,PasswordEncoder passwordEncoder){
+        this.userRepository=userRepository;
+        this.passwordEncoder=passwordEncoder;
+    }
 //    public void processUser(String username){
 //        logger.info("Intializling user processing stream.");
 //        try{
@@ -32,53 +29,51 @@ public class UserService {
 //            }
 //        } catch (Exception e) {
 //            logger.error("Execution failed for context user: {}", username, e);
+
 //
 //        }
 //    }
 
-    public boolean saveNewEntry(User user){
-        try {
-            user.setPassword(passwordEncoder.encode(user.getUserName()));
-            user.setRoles(Arrays.asList("User"));
-            userRepo.save(user);
+    public User saveNewEntry(User user){
 
-            log.info("################ USER SAVED ################");
-
-            return true;
-        }catch (Exception e){
-            log.info("ohhhhhhhhhhh shitttttttttttttttt");
-            log.error("Error occurred for {} :",user.getUserName(),e);
-            log.debug("User creation started");
-            log.warn("ohhhhhhhhhhh shitttttttttttttttt");
-            //log.debug("ohhhhhhhhhhh shitttttttttttttttt");
-            log.trace("ohhhhhhhhhhh shitttttttttttttttt");
-            return false;
+        if (userRepository.findByUserName(user.getUserName()) != null) {
+            throw new IllegalArgumentException("Username already exists");
         }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(List.of("USER"));
+
+        User savedUser = userRepository.save(user);
+
+        log.info("User saved successfully. username={}", user.getUserName());
+
+        return savedUser;
+
 
     }
     public void saveAdmin(User user){
-        user.setPassword(passwordEncoder.encode(user.getUserName()));
-        user.setRoles(Arrays.asList("User","ADMIN"));
-        userRepo.save(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(List.of("USER", "ADMIN"));
+        userRepository.save(user);
 
     }
     public void saveUser(User user){
-        userRepo.save(user);
+        userRepository.save(user);
 
     }
 
     public List<User> getAll() {
-        return userRepo.findAll();
+        return userRepository.findAll();
     }
 
     public Optional<User> findById(ObjectId id) {
-        return userRepo.findById(id);
+        return userRepository.findById(id);
     }
 
     public void deleteById(ObjectId id) {
-        userRepo.deleteById(id);
+        userRepository.deleteById(id);
     }
     public User findByUserName(String userName){
-        return userRepo.findByUserName(userName);
+        return userRepository.findByUserName(userName);
     }
 }
